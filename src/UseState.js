@@ -1,79 +1,45 @@
 import React from "react";
+import { reducer, initialState, actionTypes } from "./UseReducer";
 
 const SECURITY_CODE = 'paradigma';
 function UseState({ name }) {
-  const [state, setState] = React.useState({
-    error: false,
-    value: '',
-    loading: false,
-    delete: false,
-    confirmed: false,
-  });
+  const [state, dispatch] = React.useReducer(reducer, initialState);
 
   console.log(state);
 
-  const onValueChange = (value) => {
-    setState(prevstate => ({
-      ...prevstate,
-      value: value
-    }));
+  const onValueChange = ({target:{value: newValue}}) => {
+    dispatch({ type: actionTypes.valueChange, payload: newValue });
   }
-  
+
   const onCheck = () => {
-    setState(prevstate => ({
-      ...prevstate,
-      loading: true,
-    }));
+    dispatch({ type: actionTypes.check });
   };
 
-  const onDelete=()=>{
-    setState(prevstate => ({
-      ...prevstate,
-      error: false,
-      delete: true,
-    }));
+  const onDelete = () => {
+    dispatch({ type: actionTypes.delete });
   }
 
-  const onError=()=>{
-    setState(prevstate => ({
-      ...prevstate,
-      error: true,
-    }));
+  const onError = () => {
+    dispatch({ type: actionTypes.error });
   }
 
   const onConfirm = () => {
-    setState(prevState => ({
-      ...prevState,
-      confirmed: true,
-    }));
+    dispatch({ type: actionTypes.confirm });
   };
 
   const onCancel = () => {
-    setState(prevState => ({
-      ...prevState,
-      delete: false,
-      confirmed: false,
-    }));
+    dispatch({ type: actionTypes.cancel });
   };
 
   React.useEffect(() => {
     if (!!state.loading) {
       setTimeout(() => {
-        try {
-          console.log("Empezando el efecto");
-          if (state.value !== SECURITY_CODE) {
-            throw new Error("El código es incorrecto")
-          } else {
-            onDelete();
-          }
-        } catch (error) {
+        console.log("Empezando el efecto");
+        if (state.value !== SECURITY_CODE) {
           onError();
-        }
-        finally {
-          setState(prevstate => ({
-            ...prevstate,
-            loading: false,
-          }));
+          console.log("Error en el efecto");
+        } else {
+          onDelete();
         }
       }, 2000);
     }
@@ -94,12 +60,10 @@ function UseState({ name }) {
         )}
 
         <input placeholder="Código de seguridad"
-          value={state.value} onChange={(event) => onValueChange(event.target.value)}
+          value={state.value} onChange={onValueChange}
         />
 
-        <button
-          onClick={onCheck}
-        >Comprobar</button>
+        <button onClick={onCheck}>Comprobar</button>
       </div>
     );
   } else if (!!state.delete && !state.confirmed) {
